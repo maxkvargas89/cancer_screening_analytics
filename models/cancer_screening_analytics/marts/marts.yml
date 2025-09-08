@@ -1,0 +1,13 @@
+version: 2
+models:
+  - name: dim_member
+    columns:
+      - name: member_id
+        tests: [not_null, unique]
+  - name: fct_screening_journey
+    columns:
+      - name: member_id
+        tests:
+          - relationships:
+              to: ref('dim_member')
+              field: member_id

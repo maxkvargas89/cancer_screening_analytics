@@ -1,0 +1,26 @@
+name: 'cancer_screening_analytics'
+version: '1.0'
+config-version: 2
+
+profile: 'cancer_screening_analytics'
+
+models:
+  cancer_screening_analytics:
+    staging:
+      +schema: staging
+      +materialized: view
+    intermediate:
+      +schema: intermediate
+      +materialized: table
+    marts:
+      +schema: marts
+      +materialized: table
+      +persist_docs: { relation: true, columns: true }
+
+seeds:
+  cancer_screening_analytics:
+    +schema: staging
+    +quote_columns: false
+
+tests:
+  +severity: error

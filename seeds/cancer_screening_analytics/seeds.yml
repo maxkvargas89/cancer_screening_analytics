@@ -1,0 +1,15 @@
+# seeds/seeds.yml
+version: 2
+seeds:
+  - name: raw_app_events
+    config:
+      column_types:
+        event_ts: timestamp
+  - name: raw_members
+    config:
+      column_types:
+        created_at: timestamp
+  - name: raw_claims
+    config:
+      column_types:
+        paid_amount: numeric   # BigQuery uses NUMERIC, not decimal
