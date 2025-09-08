@@ -1,0 +1,5 @@
+event_id,member_id,event_name,event_ts,device,app_version
+EV001,M001,app_open,2024-02-16T09:00:00Z,ios,1.0.0
+EV002,M001,book_screening,2024-02-20T10:10:00Z,ios,1.0.0
+EV003,M002,app_open,2024-03-01T08:15:00Z,android,1.0.1
+EV004,M001,view_recommendation,2024-02-18T14:05:00Z,ios,1.0.0

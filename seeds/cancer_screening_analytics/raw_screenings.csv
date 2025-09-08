@@ -1,0 +1,4 @@
+screening_id,member_id,screening_type,recommendation_date,completion_date,result,source
+S001,M001,breast,2024-02-15,2024-03-01,negative,claims
+S002,M002,colorectal,2024-02-20,,,
+S003,M001,colorectal,2024-03-05,2024-03-25,positive,partner_feed

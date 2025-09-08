@@ -1,0 +1,10 @@
+version: 2
+models:
+  - name: int_member_program_status
+    tests: []
+  - name: int_screening_events
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [member_id, screening_type]
+  - name: int_claims_procedures
+    tests: []

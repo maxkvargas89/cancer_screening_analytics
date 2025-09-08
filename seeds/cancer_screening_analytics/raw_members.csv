@@ -1,0 +1,4 @@
+member_id,employer_id,first_name,last_name,dob,sex_at_birth,email,created_at,is_test_account
+M001,E001,Ana,Lopez,1985-03-12,F,ana@example.com,2024-01-05T10:00:00Z,false
+M002,E001,Sam,Chen,1978-09-02,M,sam@example.com,2024-01-07T11:20:00Z,false
+M003,E002,Lee,Nguyen,1990-12-20,F,lee@example.com,2024-01-09T09:15:00Z,false

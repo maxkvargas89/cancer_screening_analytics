@@ -1,0 +1,33 @@
+version: 2
+
+sources:
+  - name: raw
+    database: "{{ target.database }}"         # e.g., cancer-screening-dev-471415
+    schema: "{{ target.schema }}_staging"     # e.g., dbt_mvargas_staging
+    tables:
+      - name: raw_members
+        columns:
+          - name: member_id
+            tests: [not_null, unique]
+      - name: raw_employers
+        columns:
+          - name: employer_id
+            tests: [not_null, unique]
+      - name: raw_enrollments
+        columns:
+          - name: member_id
+            tests:
+              - relationships:
+                  to: source('raw', 'raw_members')
+                  field: member_id
+      - name: raw_screenings
+        columns:
+          - name: screening_id
+            tests: [not_null, unique]
+          - name: screening_type
+            tests:
+              - accepted_values:
+                  values: ['breast','colorectal','cervical','lung']
+      - name: raw_claims
+      - name: raw_providers
+      - name: raw_app_events
