@@ -8,3 +8,18 @@ models:
           combination_of_columns: [member_id, screening_type]
   - name: int_claims_procedures
     tests: []
+  - name: int_member_screening_keys
+    description: >
+      Pre-joins screenings to members and standardizes types/values.
+      Adds surrogate key (fact_id) used by fact model.
+    columns:
+      - name: fact_id
+        tests: [not_null, unique]
+      - name: screening_id
+        tests: [not_null, unique]
+      - name: member_id
+        tests: [not_null]
+      - name: screening_type
+        tests:
+          - accepted_values:
+              values: ['breast','colorectal','cervical','lung']
