@@ -1,19 +1,37 @@
-{{ config(schema='staging', materialized='view') }}
+with source as (
+    select * from {{ source('raw', 'raw_screenings') }}
+),
 
-with base as (
-  select
-    screening_id,
-    member_id,
-    lower(screening_type) as screening_type,
-    date(recommendation_date) as recommendation_date,
-    date(completion_date) as completion_date,
-    lower(result) as result,
-    lower(source) as source
-  from {{ source('raw','raw_screenings') }}
+cleaned as (
+    select
+        -- Primary key
+        screening_id,
+        
+        -- Foreign keys
+        member_id,
+        employer_id,
+        provider_id,
+        
+        -- Screening attributes
+        screening_type,
+        screening_date,
+        result,
+        result_date,
+        
+        -- Follow-up tracking
+        follow_up_needed,
+        follow_up_completed,
+        
+        -- Financial
+        cost,
+        
+        -- Calculated fields
+        DATE_DIFF(result_date, screening_date, DAY) as days_to_result,
+        
+        -- Metadata
+        CURRENT_TIMESTAMP() as loaded_at
+        
+    from source
 )
-select
-  *,
-  case when completion_date is not null and completion_date >= recommendation_date
-    then date_diff(completion_date, recommendation_date, day)
-  end as time_to_screening_days
-from base
+
+select * from cleaned

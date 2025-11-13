@@ -2,36 +2,70 @@ version: 2
 
 sources:
   - name: raw
-    database: "{{ target.database }}"         # e.g., cancer-screening-dev-471415
-    schema: "{{ target.schema }}_staging"     # e.g., dbt_mvargas_staging
+    database: "{{ target.project }}"
+    schema: dbt_mvargas_raw
     tables:
       - name: raw_members
         columns:
           - name: member_id
-            tests: [not_null, unique]
+            data_tests:
+              - unique
+              - not_null
+          - name: employer_id
+            data_tests:
+              - not_null
+          - name: date_of_birth
+            data_tests:
+              - not_null
+          - name: gender
+            data_tests:
+              - accepted_values:
+                  values: ['M', 'F', 'Other']
+      
       - name: raw_employers
         columns:
           - name: employer_id
-            tests: [not_null, unique]
+            data_tests:
+              - unique
+              - not_null
+      
       - name: raw_enrollments
         columns:
           - name: enrollment_id
-            tests: [not_null, unique]
+            data_tests:
+              - unique
+              - not_null
           - name: member_id
-            tests:
+            data_tests:
+              - not_null
               - relationships:
-                  arguments:
-                    to: source('raw', 'raw_members')
-                    field: member_id
+                  to: source('raw', 'raw_members')
+                  field: member_id
+      
       - name: raw_screenings
         columns:
           - name: screening_id
-            tests: [not_null, unique]
-          - name: screening_type
-            tests:
-              - accepted_values:
-                  arguments:
-                    values: ['Mammogram','Colonoscopy','Prostate Screening','Cervical Screening']
-      - name: raw_claims
+            data_tests:
+              - unique
+              - not_null
+      
       - name: raw_providers
+        columns:
+          - name: provider_id
+            data_tests:
+              - unique
+              - not_null
+      
+      - name: raw_claims
+        columns:
+          - name: claim_id
+            data_tests:
+              - unique
+              - not_null
+      
       - name: raw_app_events
+        columns:
+          - name: event_id
+            data_tests:
+              - unique
+              - not_null
