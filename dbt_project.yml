@@ -1,26 +1,52 @@
 name: 'cancer_screening_analytics'
-version: '1.0'
+version: '1.0.0'
 config-version: 2
 
 profile: 'cancer_screening_analytics'
 
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
 models:
-  staging:
-    +schema: staging
-    +materialized: view
-  intermediate:
-    +schema: intermediate
-    +materialized: table
-  marts:
-    +schema: marts
-    +materialized: table
-    +persist_docs: {relation: true, columns: true}
+  cancer_screening_analytics:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: view
+      +schema: intermediate
+      
+      core:
+        +materialized: table
+        +schema: intermediate
+    marts:
+      +materialized: table
+      +schema: marts
+      
+      client_analytics:
+        +materialized: table
+        +schema: marts
+      
+      internal_ops:
+        +materialized: table
+        +schema: marts
 
 seeds:
-  +schema: staging
-  +quote_columns: false
+  cancer_screening_analytics:
+    +schema: raw
+    +quote_columns: false
 
 tests:
   +severity: error
+  
 flags:
   require_generic_test_arguments_property: true

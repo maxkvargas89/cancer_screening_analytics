@@ -1,12 +1,37 @@
-{{ config(schema='staging', materialized='view') }}
+with source as (
+    select * from {{ source('raw', 'raw_claims') }}
+),
 
-select
-  claim_id,
-  member_id,
-  provider_id,
-  date(claim_date) as claim_date,
-  cpt_code,
-  diagnosis_code,
-  cast(paid_amount as numeric) as paid_amount,
-  place_of_service
-from {{ source('raw','raw_claims') }}
+cleaned as (
+    select
+        -- Primary key
+        claim_id,
+        
+        -- Foreign keys
+        member_id,
+        provider_id,
+        
+        -- Claim dates
+        claim_date,
+        service_date,
+        
+        -- Procedure info
+        procedure_code,
+        procedure_description,
+        diagnosis_code,
+        
+        -- Financial
+        claim_amount,
+        paid_amount,
+        claim_status,
+        
+        -- Calculated fields
+        claim_amount - paid_amount as unpaid_amount,
+        
+        -- Metadata
+        CURRENT_TIMESTAMP() as loaded_at
+        
+    from source
+)
+
+select * from cleaned
