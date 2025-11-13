@@ -8,7 +8,7 @@ seeds:
   - name: raw_members
     config:
       column_types:
-        created_at: timestamp
+        created_at: date
   - name: raw_claims
     config:
       column_types:
