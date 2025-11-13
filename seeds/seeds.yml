@@ -4,7 +4,7 @@ seeds:
   - name: raw_app_events
     config:
       column_types:
-        event_ts: timestamp
+        event_timestamp: timestamp
   - name: raw_members
     config:
       column_types:
@@ -12,4 +12,7 @@ seeds:
   - name: raw_claims
     config:
       column_types:
-        paid_amount: numeric   # BigQuery uses NUMERIC, not decimal
+        claim_date: date
+        service_date: date
+        claim_amount: numeric
+        paid_amount: numeric
