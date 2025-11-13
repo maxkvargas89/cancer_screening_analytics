@@ -1,3 +1,0 @@
-claim_id,member_id,provider_id,claim_date,cpt_code,diagnosis_code,paid_amount,place_of_service
-C001,M001,P001,2024-03-10,77067,Z12.31,250.00,11
-C002,M001,P002,2024-04-05,45378,R19.5,600.00,22

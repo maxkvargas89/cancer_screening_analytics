@@ -1,0 +1,11 @@
+employer_id,employer_name,industry,employee_count,state,contract_start_date
+EMP001,Technology Corp A,Technology,5000,CA,2022-01-01
+EMP002,Healthcare Corp B,Healthcare,2500,NY,2022-01-31
+EMP003,Manufacturing Corp C,Manufacturing,10000,TX,2022-03-02
+EMP004,Retail Corp D,Retail,1000,FL,2022-04-01
+EMP005,Finance Corp E,Finance,5000,IL,2022-05-01
+EMP006,Education Corp F,Education,2500,WA,2022-05-31
+EMP007,Government Corp G,Government,10000,MA,2022-06-30
+EMP008,Hospitality Corp H,Hospitality,500,CA,2022-07-30
+EMP009,Construction Corp I,Construction,1000,NY,2022-08-29
+EMP010,Legal Corp J,Legal,500,TX,2022-09-28
