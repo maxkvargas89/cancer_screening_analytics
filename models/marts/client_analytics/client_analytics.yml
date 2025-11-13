@@ -1,0 +1,49 @@
+version: 2
+models:
+  - name: dim_member
+    columns:
+      - name: member_id
+        tests: [not_null, unique]
+  - name: fct_screening_journey
+    columns:
+      - name: member_id
+        tests:
+          - relationships:
+              to: ref('dim_member')
+              field: member_id
+  - name: fct_screenings
+    description: >
+      Screening events at the grain of one row per screening_id (per member).
+      Watermarked incrementally on recommendation_date.
+      Partitioned by recommendation_date and clustered by member_id, screening_type.
+    columns:
+      - name: fact_id
+        description: "Surrogate key (md5 over screening_id)"
+        tests: [not_null, unique]
+      - name: screening_id
+        description: "Unique identifier in source; enforces fact grain"
+        tests: [not_null, unique]
+      - name: member_id
+        description: "Member who received or completed the screening"
+        tests: [not_null]
+      - name: screening_type
+        description: "Normalized screening type"
+        tests:
+          - accepted_values:
+              values: ['breast','colorectal','cervical','lung']
+      - name: recommendation_date
+        description: "Date the screening was recommended (watermark & partition column)"
+        tests: [not_null]
+      - name: completion_date
+        description: "Date the screening was completed (nullable)"
+      - name: result
+        description: "Clinical result if available (e.g., positive/negative)"
+      - name: source
+        description: "Upstream source of the record (claims, partner_feed, etc.)"
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "recommendation_date <= coalesce(completion_date, recommendation_date)"
+          config:
+            severity: warn
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [screening_id, member_id]
