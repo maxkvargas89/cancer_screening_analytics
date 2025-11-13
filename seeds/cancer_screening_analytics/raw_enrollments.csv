@@ -1,4 +1,0 @@
-member_id,program,enrollment_status,enrollment_date,disenrollment_date
-M001,cancer_screening,enrolled,2024-02-01,
-M002,cancer_screening,enrolled,2024-02-10,
-M003,cancer_screening,opted_out,2024-02-05,2024-02-20

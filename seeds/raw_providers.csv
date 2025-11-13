@@ -1,0 +1,11 @@
+provider_id,provider_name,specialty,state,npi_number
+PROV0001,Dr. A. Provider1,Radiology,CA,NPI1234567890
+PROV0002,Dr. B. Provider2,Oncology,NY,NPI2345678901
+PROV0003,Dr. C. Provider3,Primary Care,TX,NPI3456789012
+PROV0004,Dr. D. Provider4,Gastroenterology,FL,NPI4567890123
+PROV0005,Dr. E. Provider5,Pathology,IL,NPI5678901234
+PROV0006,Dr. F. Provider6,Radiology,WA,NPI6789012345
+PROV0007,Dr. G. Provider7,Oncology,MA,NPI7890123456
+PROV0008,Dr. H. Provider8,Primary Care,CA,NPI8901234567
+PROV0009,Dr. I. Provider9,Gastroenterology,NY,NPI9012345678
+PROV0010,Dr. J. Provider10,Radiology,TX,NPI1234509876
