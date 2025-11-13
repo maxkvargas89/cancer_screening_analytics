@@ -5,7 +5,8 @@ models:
   - name: int_screening_events
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: [member_id, screening_type]
+          arguments:
+            combination_of_columns: [member_id, screening_type]
   - name: int_claims_procedures
     tests: []
   - name: int_member_screening_keys
@@ -22,4 +23,5 @@ models:
       - name: screening_type
         tests:
           - accepted_values:
-              values: ['breast','colorectal','cervical','lung']
+              arguments:
+                values: ['breast', 'colorectal', 'cervical', 'lung']

@@ -15,7 +15,7 @@ models:
     marts:
       +schema: marts
       +materialized: table
-      +persist_docs: { relation: true, columns: true }
+      +persist_docs: {relation: true, columns: true}
 
 seeds:
   cancer_screening_analytics:
@@ -24,3 +24,5 @@ seeds:
 
 tests:
   +severity: error
+flags:
+  require_generic_test_arguments_property: true

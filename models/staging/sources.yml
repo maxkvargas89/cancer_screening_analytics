@@ -18,8 +18,9 @@ sources:
           - name: member_id
             tests:
               - relationships:
-                  to: source('raw', 'raw_members')
-                  field: member_id
+                  arguments:
+                    to: source('raw', 'raw_members')
+                    field: member_id
       - name: raw_screenings
         columns:
           - name: screening_id
@@ -27,7 +28,8 @@ sources:
           - name: screening_type
             tests:
               - accepted_values:
-                  values: ['breast','colorectal','cervical','lung']
+                  arguments:
+                    values: ['breast', 'colorectal', 'cervical', 'lung']
       - name: raw_claims
       - name: raw_providers
       - name: raw_app_events

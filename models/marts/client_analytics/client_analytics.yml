@@ -9,8 +9,9 @@ models:
       - name: member_id
         tests:
           - relationships:
-              to: ref('dim_member')
-              field: member_id
+              arguments:
+                to: ref('dim_member')
+                field: member_id
   - name: fct_screenings
     description: >
       Screening events at the grain of one row per screening_id (per member).
@@ -30,7 +31,8 @@ models:
         description: "Normalized screening type"
         tests:
           - accepted_values:
-              values: ['breast','colorectal','cervical','lung']
+              arguments:
+                values: ['breast', 'colorectal', 'cervical', 'lung']
       - name: recommendation_date
         description: "Date the screening was recommended (watermark & partition column)"
         tests: [not_null]
@@ -42,8 +44,10 @@ models:
         description: "Upstream source of the record (claims, partner_feed, etc.)"
     tests:
       - dbt_utils.expression_is_true:
-          expression: "recommendation_date <= coalesce(completion_date, recommendation_date)"
           config:
             severity: warn
+          arguments:
+            expression: "recommendation_date <= coalesce(completion_date, recommendation_date)"
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: [screening_id, member_id]
+          arguments:
+            combination_of_columns: [screening_id, member_id]
