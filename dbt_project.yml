@@ -27,18 +27,20 @@ models:
       fct_screenings:
         +materialized: incremental
         +unique_key: screening_key
-        +partition_by:
-            field: screening_date
-            data_type: date
-        +cluster_by: ["member_key", "screening_type"]
+        # Remove partitioning for portfolio project
+        #+partition_by:
+        #    field: screening_date
+        #    data_type: date
+        #+cluster_by: ["member_key", "screening_type"]
         
       agg_member_enrollment_summary:
           +materialized: table
           +unique_key: member_key
-          +partition_by:
-            field: enrollment_date
-            data_type: date
-          +cluster_by: ["employer_key", "enrollment_status"]
+          # Remove partitioning for portfolio project
+          #+partition_by:
+          #  field: enrollment_date
+          #  data_type: date
+          #+cluster_by: ["employer_key", "enrollment_status"]
     marts:
       +materialized: table
       +schema: marts
