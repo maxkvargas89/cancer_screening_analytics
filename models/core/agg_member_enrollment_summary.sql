@@ -1,15 +1,11 @@
 {{
     config(
-        materialized='incremental',
-        unique_key='journey_key'
+        materialized='table'
     )
 }}
 
 with enrollments as (
     select * from {{ ref('stg_enrollments') }}
-    {% if is_incremental() %}
-        where enrollment_date > (select max(enrollment_date) from {{ this }})
-    {% endif %}
 ),
 
 screenings as (
@@ -35,11 +31,10 @@ member_screening_summary as (
 
 final as (
     select
-        -- Primary key
-        {{ dbt_utils.generate_surrogate_key(['e.member_id']) }} as journey_key,
-        
-        -- Foreign keys (generated from natural keys)
+        -- Primary key (just use member_key - no need for separate journey_key)
         {{ dbt_utils.generate_surrogate_key(['e.member_id']) }} as member_key,
+        
+        -- Foreign key
         {{ dbt_utils.generate_surrogate_key(['e.employer_id']) }} as employer_key,
         
         -- Natural keys

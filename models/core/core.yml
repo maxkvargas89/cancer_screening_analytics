@@ -181,9 +181,9 @@ models:
       - name: days_to_result
         description: "Number of days from screening to result delivery - quality metric for operational efficiency"
   
-  - name: fct_screening_journey
+  - name: agg_member_enrollment_summary
     description: |
-      Member Screening Journey Fact Table (Incremental)
+      Member Enrollment Summary Aggregate Table
       
       Aggregated fact table capturing each member's complete screening journey from enrollment through
       all screening events and outcomes. This is a periodic snapshot fact (one row per member) that
@@ -208,17 +208,17 @@ models:
       - Individual follow-up completion rate
       - Member lifetime cost and screening volume
     columns:
-      - name: journey_key
-        description: "Surrogate key for this member journey - primary key of fact table"
+      - name: member_key
+        description: "Surrogate key for this member enrollment summary - primary key of agg table"
         data_tests:
           - unique
           - not_null
-      - name: member_key
-        description: "Foreign key to dim_member - links to patient"
-        data_tests:
-          - not_null
       - name: employer_key
         description: "Foreign key to dim_employer - links to sponsoring organization"
+      - name: member_id
+        description: "Natural key for member record"
+      - name: employer_id
+        description: "Natural key for employee record"  
       - name: enrollment_id
         description: "Natural key for enrollment record"
       - name: enrollment_date

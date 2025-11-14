@@ -1,0 +1,46 @@
+version: 2
+
+models:
+  - name: mart_program_health
+    description: "Client-facing analytics: Program health metrics by employer"
+    columns:
+      - name: employer_id
+        description: "Employer identifier"
+        data_tests:
+          - not_null
+      - name: enrollment_rate_pct
+        description: "% of eligible employees enrolled in program"
+      - name: participation_rate_pct
+        description: "% of enrolled members who completed screening"
+      - name: follow_up_compliance_rate_pct
+        description: "% of needed follow-ups that were completed"
+      - name: program_health_score
+        description: "Composite score 0-100 measuring overall program performance"
+  
+  - name: mart_population_insights
+    description: "Client-facing analytics: Population segmentation and engagement patterns"
+    columns:
+      - name: employer_id
+        data_tests:
+          - not_null
+      - name: age_group
+        description: "Age segment"
+      - name: gender
+        description: "Gender"
+      - name: screening_rate_pct
+        description: "% of population segment that completed screening"
+      - name: engagement_risk_segment
+        description: "Risk categorization based on engagement levels"
+  
+  - name: mart_outcomes_summary
+    description: "Client-facing analytics: Clinical outcomes and program impact"
+    columns:
+      - name: employer_id
+        data_tests:
+          - not_null
+      - name: cancers_detected_per_1000_screenings
+        description: "Cancer detection rate (industry standard metric)"
+      - name: follow_up_completion_rate_pct
+        description: "% of abnormal results with completed follow-up"
+      - name: outcomes_quality_score
+        description: "Composite score 0-100 measuring clinical quality"
