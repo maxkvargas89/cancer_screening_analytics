@@ -2,45 +2,170 @@ version: 2
 
 models:
   - name: mart_program_health
-    description: "Client-facing analytics: Program health metrics by employer"
+    description: |
+      Program Health Dashboard - Employer-Level KPIs
+      
+      Client-facing mart providing comprehensive program performance metrics aggregated by employer.
+      Designed to answer: "How is our employee screening program performing?"
+      
+      Business Purpose:
+      - Monitor enrollment and participation rates
+      - Track time-to-screening and operational efficiency
+      - Measure follow-up compliance and care continuity
+      - Calculate program ROI and cost effectiveness
+      - Provide overall program health scoring
+      
+      Key Stakeholders:
+      - Employer HR teams and benefits managers
+      - Color Account Managers
+      - Executive leadership reviewing client success
+      
+      Grain: One row per employer organization
+      
+      Refresh Frequency: Daily (full refresh)
     columns:
       - name: employer_id
-        description: "Employer identifier"
-        data_tests:
+        description: "Unique employer identifier"
+        tests:
           - not_null
+      - name: employer_name
+        description: "Company/organization name"
+      - name: total_enrolled_members
+        description: "Total members enrolled in screening program"
       - name: enrollment_rate_pct
-        description: "% of eligible employees enrolled in program"
+        description: "% of eligible employees (employee_count) who enrolled - measures program reach"
       - name: participation_rate_pct
-        description: "% of enrolled members who completed screening"
+        description: "% of enrolled members who completed at least one screening - KEY SUCCESS METRIC"
+      - name: avg_days_to_first_screening
+        description: "Average days from enrollment to first completed screening - measures engagement speed"
+      - name: median_days_to_first_screening
+        description: "Median days to first screening - less sensitive to outliers than average"
       - name: follow_up_compliance_rate_pct
-        description: "% of needed follow-ups that were completed"
+        description: "% of needed follow-ups that were completed - measures care continuity"
       - name: program_health_score
-        description: "Composite score 0-100 measuring overall program performance"
+        description: |
+          Composite score 0-100 measuring overall program performance:
+          - 20 points: Activation rate
+          - 35 points: Participation rate
+          - 35 points: Follow-up compliance rate
+          - 10 points: Time-to-screening (≤10 days - 10, between 10 and 20 days - 5, >20 - 0)
+          
+          Score interpretation:
+          - 80-100: Excellent program performance
+          - 60-79: Good performance, minor improvements needed
+          - 40-59: Fair performance, significant gaps exist
+          - <40: Poor performance, urgent intervention needed
+      - name: cancers_detected_per_1000_screenings
+        description: "Industry standard metric for screening yield - benchmark ~4-8 per 1000"
   
   - name: mart_population_insights
-    description: "Client-facing analytics: Population segmentation and engagement patterns"
+    description: |
+      Population Insights Dashboard - Demographic Segmentation
+      
+      Client-facing mart providing population health analytics segmented by demographics.
+      Designed to answer: "Where should we focus outreach efforts?"
+      
+      Business Purpose:
+      - Identify underserved population segments
+      - Target outreach campaigns to specific demographics
+      - Understand engagement patterns by age, gender, location, risk profile
+      - Detect health equity gaps and disparities
+      - Segment members for personalized interventions
+      
+      Key Stakeholders:
+      - Employer wellness program managers
+      - Color clinical team planning interventions
+      - Marketing/outreach teams
+      
+      Grain: One row per employer - age_group - gender - state - high_risk_flag combination
+      
+      Refresh Frequency: Daily (full refresh)
     columns:
       - name: employer_id
-        data_tests:
+        description: "Unique employer identifier"
+        tests:
           - not_null
       - name: age_group
-        description: "Age segment"
+        description: "Age segment: 'Under 40', '40-49', '50-64', '65+'"
       - name: gender
-        description: "Gender"
+        description: "Gender: M, F, Other"
+      - name: state
+        description: "Member's state of residence"
+      - name: high_risk_flag
+        description: "Boolean indicating elevated cancer risk (family history, genetic factors)"
+      - name: total_members
+        description: "Population size of this demographic segment"
       - name: screening_rate_pct
-        description: "% of population segment that completed screening"
+        description: "% of segment who completed screening - KEY EQUITY METRIC"
       - name: engagement_risk_segment
-        description: "Risk categorization based on engagement levels"
+        description: |
+          Risk categorization for targeted interventions:
+          - 'High Risk - Low Engagement': <50% screening rate - URGENT OUTREACH NEEDED
+          - 'Medium Risk - Moderate Engagement': 50-75% screening rate - Needs encouragement
+          - 'Low Risk - High Engagement': >75% screening rate - Maintain momentum
+      - name: has_care_gap
+        description: "Binary flag indicating segment has members who haven't screened - identifies opportunity areas"
+      - name: cancer_detection_rate_per_1000
+        description: "Cancers detected per 1,000 screenings in this segment - may reveal high-risk populations"
   
   - name: mart_outcomes_summary
-    description: "Client-facing analytics: Clinical outcomes and program impact"
+    description: |
+      Clinical Outcomes Dashboard - Program Impact
+      
+      Client-facing mart providing clinical outcome metrics and program impact assessment.
+      Designed to answer: "What impact is the program having on health outcomes?"
+      
+      Business Purpose:
+      - Demonstrate program clinical value and ROI
+      - Track cancer detection rates and early detection success
+      - Monitor care gaps and follow-up completion
+      - Calculate cost per cancer detected
+      - Measure quality of care delivery
+      
+      Key Stakeholders:
+      - Employer benefits/finance teams evaluating ROI
+      - Color clinical leadership
+      - Executive teams presenting program value
+      
+      Grain: One row per employer organization
+      
+      Refresh Frequency: Daily (full refresh)
     columns:
       - name: employer_id
-        data_tests:
+        description: "Unique employer identifier"
+        tests:
           - not_null
+      - name: employer_name
+        description: "Company/organization name"
+      - name: total_screenings
+        description: "Total screening procedures performed"
+      - name: cancer_detections
+        description: "Number of cancers detected - PRIMARY OUTCOME METRIC"
       - name: cancers_detected_per_1000_screenings
-        description: "Cancer detection rate (industry standard metric)"
+        description: |
+          Industry standard screening yield metric:
+          - Mammography benchmark: 4-5 per 1,000
+          - Colonoscopy benchmark: 6-8 per 1,000
+          Used to validate program clinical effectiveness
       - name: follow_up_completion_rate_pct
-        description: "% of abnormal results with completed follow-up"
+        description: "% of abnormal results with completed follow-up - CRITICAL QUALITY METRIC"
+      - name: total_care_gaps_identified
+        description: "Number of abnormal findings (abnormal + cancer) requiring follow-up"
+      - name: care_gaps_addressed
+        description: "Number of follow-ups completed - shows care continuity"
+      - name: care_gaps_remaining
+        description: "Number of follow-ups needed but not completed - ACTION ITEMS for outreach"
+      - name: cost_per_cancer_detected
+        description: "Total program cost / cancers detected - ROI metric for employers"
       - name: outcomes_quality_score
-        description: "Composite score 0-100 measuring clinical quality"
+        description: |
+          Composite clinical quality score 0-100:
+          - 50 points: Follow-up completion rate
+          - 25 points: Timely results (≤14 days)
+          - 25 points: Detection rate (≥4 per 1,000)
+          
+          Score interpretation:
+          - 80-100: Excellent clinical quality
+          - 60-79: Good quality, minor gaps
+          - 40-59: Fair quality, improvements needed
+          - <40: Poor quality, urgent review required
