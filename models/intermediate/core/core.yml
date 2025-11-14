@@ -1,0 +1,76 @@
+version: 2
+
+models:
+  - name: dim_employer
+    description: "Employer dimension table"
+    columns:
+      - name: employer_key
+        description: "Surrogate key"
+        data_tests:
+          - unique
+          - not_null
+      - name: employer_id
+        description: "Natural key"
+        data_tests:
+          - unique
+          - not_null
+  
+  - name: dim_member
+    description: "Member dimension table"
+    columns:
+      - name: member_key
+        description: "Surrogate key"
+        data_tests:
+          - unique
+          - not_null
+      - name: member_id
+        description: "Natural key"
+        data_tests:
+          - unique
+          - not_null
+  
+  - name: dim_provider
+    description: "Provider dimension table"
+    columns:
+      - name: provider_key
+        description: "Surrogate key"
+        data_tests:
+          - unique
+          - not_null
+      - name: provider_id
+        description: "Natural key"
+        data_tests:
+          - unique
+          - not_null
+  
+  - name: fct_screenings
+    description: "Screening events fact table"
+    columns:
+      - name: screening_key
+        description: "Surrogate key"
+        data_tests:
+          - unique
+          - not_null
+      - name: screening_id
+        description: "Natural key"
+        data_tests:
+          - unique
+          - not_null
+      - name: member_key
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_member')
+              field: member_key
+  
+  - name: fct_screening_journey
+    description: "Member screening journey fact table"
+    columns:
+      - name: journey_key
+        description: "Surrogate key"
+        data_tests:
+          - unique
+          - not_null
+      - name: member_key
+        data_tests:
+          - not_null
