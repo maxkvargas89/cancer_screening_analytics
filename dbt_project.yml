@@ -32,9 +32,9 @@ models:
             data_type: date
         +cluster_by: ["member_key", "screening_type"]
         
-      fct_screening_journey:
-          +materialized: incremental
-          +unique_key: journey_key
+      agg_member_enrollment_summary:
+          +materialized: table
+          +unique_key: member_key
           +partition_by:
             field: enrollment_date
             data_type: date
