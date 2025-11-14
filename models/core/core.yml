@@ -157,30 +157,72 @@ models:
               field: member_key
       - name: employer_key
         description: "Foreign key to dim_employer - links to sponsoring organization"
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_employer')
+              field: employer_key
       - name: provider_key
         description: "Foreign key to dim_provider - links to provider who performed screening"
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_provider')
+              field: provider_key
       - name: screening_type
         description: "Type of screening: Mammogram, Colonoscopy, Prostate Screening, Cervical Screening, etc."
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['Mammogram', 'Colonoscopy', 'Prostate Screening', 'Cervical Screening']
       - name: screening_date
         description: "Date screening was performed - used for time-series analysis and trending"
+        data_tests:
+          - not_null
       - name: result_date
         description: "Date results were delivered to member - used to calculate turnaround time"
       - name: result
         description: "Screening outcome: Normal, Abnormal - Benign, or Cancer Detected"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['Normal', 'Abnormal - Benign', 'Cancer Detected']
       - name: cancer_detected_flag
         description: "Binary flag (0/1) for cancer detected - used in SUM() for counts and rates"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
       - name: abnormal_flag
         description: "Binary flag (0/1) for abnormal but benign result - requires follow-up"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
       - name: normal_flag
         description: "Binary flag (0/1) for normal result - no follow-up needed"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
       - name: follow_up_needed
         description: "Boolean indicating whether result requires follow-up care"
       - name: follow_up_completed_flag
         description: "Binary flag (0/1) for follow-up was completed - measures care continuity"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
       - name: follow_up_missing_flag
         description: "Binary flag (0/1) for follow-up needed but not completed - identifies care gaps"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
       - name: cost
         description: "Cost of screening procedure in dollars - used for program cost analysis"
+        data_tests:
+          - not_null
       - name: days_to_result
         description: "Number of days from screening to result delivery - quality metric for operational efficiency"
       - name: loaded_at
@@ -220,18 +262,41 @@ models:
           - not_null
       - name: employer_key
         description: "Foreign key to dim_employer - links to sponsoring organization"
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_employer')
+              field: employer_key
       - name: member_id
         description: "Natural key for member record"
+        data_tests:
+          - unique
+          - not_null
       - name: employer_id
-        description: "Natural key for employee record"  
+        description: "Natural key for employee record"
+        data_tests:
+          - not_null
       - name: enrollment_id
         description: "Natural key for enrollment record"
+        data_tests:
+          - unique
+          - not_null
       - name: enrollment_date
         description: "Date member enrolled - starting point for journey metrics"
+        data_tests:
+          - not_null
       - name: enrollment_channel
         description: "How member enrolled (Email, Portal, Phone, HR Event) - used to optimize outreach"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['Email', 'Portal', 'Phone', 'HR Event']
       - name: enrollment_status
         description: "Current status: Active, Completed, or Inactive"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['Active', 'Completed', 'Inactive']
       - name: total_screenings
         description: "Total number of screenings completed by this member - measure of engagement"
       - name: cancer_detections
@@ -254,11 +319,23 @@ models:
         description: "Average turnaround time across all member's screenings"
       - name: has_completed_screening
         description: "Binary flag (0/1) indicating member completed at least one screening - key participation metric"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
       - name: days_to_first_screening
         description: "Days from enrollment to first screening - critical engagement speed metric"
       - name: follow_up_completion_rate
         description: "Decimal 0-1 showing % of required follow-ups completed - care continuity metric"
       - name: multiple_screenings_flag
         description: "Binary flag (0/1) for members with 2+ screenings - indicates strong engagement"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
       - name: cancer_detected_flag
         description: "Binary flag (0/1) for any cancer detected - used to identify high-risk members needing support"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]

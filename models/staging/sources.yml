@@ -81,8 +81,14 @@ sources:
             description: "Date when member enrolled in the screening program"
           - name: enrollment_channel
             description: "How member enrolled: Email, Portal, Phone, or HR Event - used to optimize outreach strategies"
+            data_tests:
+              - accepted_values:
+                  values: ['Email', 'Portal', 'Phone', 'HR Event']
           - name: status
             description: "Current enrollment status: Active (ongoing), Completed (finished program), or Inactive (dropped out)"
+            data_tests:
+              - accepted_values:
+                  values: ['Active', 'Completed', 'Inactive']
           - name: consent_given
             description: "Boolean flag confirming member provided informed consent for screening"
       
@@ -106,10 +112,16 @@ sources:
                   field: member_id
           - name: screening_type
             description: "Type of cancer screening: Mammogram, Colonoscopy, Prostate Screening, Cervical Screening, etc."
+            data_tests:
+              - accepted_values:
+                  values: ['Mammogram', 'Colonoscopy', 'Prostate Screening', 'Cervical Screening']
           - name: screening_date
             description: "Date when screening procedure was performed"
           - name: result
             description: "Screening result: Normal (no issues), Abnormal - Benign (requires follow-up), or Cancer Detected"
+            data_tests:
+              - accepted_values:
+                  values: ['Normal', 'Abnormal - Benign', 'Cancer Detected']
           - name: result_date
             description: "Date when screening results were delivered to member"
           - name: follow_up_needed
@@ -134,6 +146,9 @@ sources:
             description: "Provider's name (e.g., Dr. Smith)"
           - name: specialty
             description: "Provider's medical specialty: Radiology, Oncology, Primary Care, Gastroenterology, Pathology"
+            data_tests:
+              - accepted_values:
+                  values: ['Radiology', 'Oncology', 'Primary Care', 'Gastroenterology', 'Pathology']
           - name: npi_number
             description: "National Provider Identifier - unique 10-digit ID for healthcare providers in the US"
       
@@ -156,6 +171,9 @@ sources:
             description: "ICD-10 code for diagnosis (e.g., C50.9 = Breast cancer, D12.6 = Benign colon polyp)"
           - name: claim_status
             description: "Status of insurance claim: Paid, Pending, or Denied"
+            data_tests:
+              - accepted_values:
+                  values: ['Paid', 'Pending', 'Denied']
       
       - name: raw_app_events
         description: |
