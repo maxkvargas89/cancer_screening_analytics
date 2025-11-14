@@ -2,70 +2,177 @@ version: 2
 
 sources:
   - name: raw
+    description: "Raw data loaded from CSV seeds representing Color's cancer screening program data"
     database: "{{ target.project }}"
     schema: dbt_mvargas_raw
     tables:
       - name: raw_members
+        description: |
+          Raw member (patient) data from Color's screening program. Contains demographic information,
+          contact details, and risk flags for individuals enrolled in employer-sponsored cancer screening.
+          Each row represents one unique member/patient.
         columns:
           - name: member_id
+            description: "Unique identifier for each member/patient in the screening program"
             data_tests:
               - unique
               - not_null
           - name: employer_id
+            description: "Foreign key to employers table - identifies which company/organization sponsors this member"
             data_tests:
               - not_null
           - name: date_of_birth
+            description: "Member's date of birth, used to calculate age and determine screening eligibility"
             data_tests:
               - not_null
           - name: gender
+            description: "Member's gender (M/F/Other), affects screening type eligibility (e.g., mammograms for women)"
             data_tests:
               - accepted_values:
                   values: ['M', 'F', 'Other']
+          - name: email
+            description: "Member's email address for outreach and results delivery. May contain nulls (~2%) for data quality testing."
+          - name: high_risk_flag
+            description: "Boolean flag indicating member has elevated cancer risk factors (family history, genetic markers, etc.)"
+          - name: created_at
+            description: "Timestamp when member record was first created in the system"
       
       - name: raw_employers
+        description: |
+          Employer/client organizations that sponsor cancer screening programs for their employees.
+          Each row represents one company/organization that has contracted with Color for screening services.
+          Used to segment program performance by client and track contract details.
         columns:
           - name: employer_id
+            description: "Unique identifier for each employer/client organization"
             data_tests:
               - unique
               - not_null
+          - name: employer_name
+            description: "Company/organization name"
+          - name: industry
+            description: "Industry sector (Technology, Healthcare, Manufacturing, etc.) - used for benchmarking"
+          - name: employee_count
+            description: "Total number of employees at organization - represents eligible screening population"
+          - name: state
+            description: "Primary state where employer operates - used for geographic analysis"
+          - name: contract_start_date
+            description: "Date when employer's contract with Color began"
       
       - name: raw_enrollments
+        description: |
+          Program enrollment records tracking when members sign up for cancer screening services.
+          Each row represents one member's enrollment in their employer's screening program.
+          Tracks enrollment channel (how they signed up) and current status (active/completed/inactive).
         columns:
           - name: enrollment_id
+            description: "Unique identifier for each enrollment record"
             data_tests:
               - unique
               - not_null
           - name: member_id
+            description: "Foreign key to members - identifies which member is enrolling"
             data_tests:
               - not_null
               - relationships:
                   to: source('raw', 'raw_members')
                   field: member_id
+          - name: enrollment_date
+            description: "Date when member enrolled in the screening program"
+          - name: enrollment_channel
+            description: "How member enrolled: Email, Portal, Phone, or HR Event - used to optimize outreach strategies"
+          - name: status
+            description: "Current enrollment status: Active (ongoing), Completed (finished program), or Inactive (dropped out)"
+          - name: consent_given
+            description: "Boolean flag confirming member provided informed consent for screening"
       
       - name: raw_screenings
+        description: |
+          Cancer screening events - the core fact table of the program. Each row represents one completed
+          screening procedure (mammogram, colonoscopy, etc.) with results and follow-up requirements.
+          This is the primary data used to measure program effectiveness and clinical outcomes.
         columns:
           - name: screening_id
+            description: "Unique identifier for each screening procedure"
             data_tests:
               - unique
               - not_null
+          - name: member_id
+            description: "Foreign key to members - identifies which member received the screening"
+            data_tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'raw_members')
+                  field: member_id
+          - name: screening_type
+            description: "Type of cancer screening: Mammogram, Colonoscopy, Prostate Screening, Cervical Screening, etc."
+          - name: screening_date
+            description: "Date when screening procedure was performed"
+          - name: result
+            description: "Screening result: Normal (no issues), Abnormal - Benign (requires follow-up), or Cancer Detected"
+          - name: result_date
+            description: "Date when screening results were delivered to member"
+          - name: follow_up_needed
+            description: "Boolean flag indicating whether abnormal result requires follow-up care"
+          - name: follow_up_completed
+            description: "Boolean flag indicating whether required follow-up was completed (null if no follow-up needed)"
+          - name: cost
+            description: "Cost of screening procedure in dollars"
       
       - name: raw_providers
+        description: |
+          Healthcare providers (physicians, clinics) who perform cancer screenings for Color members.
+          Each row represents one provider with their specialty and credentials.
+          Used to analyze provider performance and network adequacy.
         columns:
           - name: provider_id
+            description: "Unique identifier for each healthcare provider"
             data_tests:
               - unique
               - not_null
+          - name: provider_name
+            description: "Provider's name (e.g., Dr. Smith)"
+          - name: specialty
+            description: "Provider's medical specialty: Radiology, Oncology, Primary Care, Gastroenterology, Pathology"
+          - name: npi_number
+            description: "National Provider Identifier - unique 10-digit ID for healthcare providers in the US"
       
       - name: raw_claims
+        description: |
+          Medical claims data for follow-up care after abnormal screening results. Tracks diagnostic
+          procedures, biopsies, consultations, and other follow-up services. Used to measure care
+          continuity and identify gaps where members didn't complete recommended follow-up.
         columns:
           - name: claim_id
+            description: "Unique identifier for each medical claim"
             data_tests:
               - unique
               - not_null
+          - name: procedure_code
+            description: "CPT code identifying the medical procedure performed (e.g., CPT77065 = Diagnostic Mammogram)"
+          - name: procedure_description
+            description: "Plain language description of procedure (e.g., Breast Biopsy, Polypectomy)"
+          - name: diagnosis_code
+            description: "ICD-10 code for diagnosis (e.g., C50.9 = Breast cancer, D12.6 = Benign colon polyp)"
+          - name: claim_status
+            description: "Status of insurance claim: Paid, Pending, or Denied"
       
       - name: raw_app_events
+        description: |
+          User engagement events from Color's patient portal - tracks how members interact with
+          the platform (logins, viewing results, scheduling screenings, etc.). Used to measure
+          digital engagement and identify members who may need additional outreach support.
         columns:
           - name: event_id
+            description: "Unique identifier for each user interaction event"
             data_tests:
               - unique
               - not_null
+          - name: event_type
+            description: "Type of interaction: login, view_results, schedule_screening, update_profile, download_report, chat_support, etc."
+          - name: event_timestamp
+            description: "Exact date and time when event occurred"
+          - name: session_id
+            description: "Session identifier - groups events that occurred in same user session"
+          - name: device_type
+            description: "Device used to access portal: Desktop, Mobile, or Tablet"

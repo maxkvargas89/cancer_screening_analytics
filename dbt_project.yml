@@ -21,18 +21,24 @@ models:
     staging:
       +materialized: view
       +schema: staging
-    intermediate:
+    core:
+      +materialized: table
       +schema: intermediate
-      
-      core:
-        +materialized: table
-        +schema: intermediate
-        fct_screenings:
+      fct_screenings:
+        +materialized: incremental
+        +unique_key: screening_key
+        +partition_by:
+            field: screening_date
+            data_type: date
+        +cluster_by: ["member_key", "screening_type"]
+        
+      fct_screening_journey:
           +materialized: incremental
-          +unique_key: screening_key
-        fct_screening_journey:
-            +materialized: incremental
-            +unique_key: journey_key
+          +unique_key: journey_key
+          +partition_by:
+            field: enrollment_date
+            data_type: date
+          +cluster_by: ["employer_key", "enrollment_status"]
     marts:
       +materialized: table
       +schema: marts

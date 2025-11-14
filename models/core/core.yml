@@ -1,0 +1,259 @@
+version: 2
+
+models:
+  - name: dim_employer
+    description: |
+      Employer Dimension Table
+      
+      Contains descriptive attributes about employer/client organizations that sponsor cancer screening 
+      programs. This is a Type 1 slowly changing dimension (updates overwrite existing records).
+      
+      Business Purpose:
+      - Segment program performance by client organization
+      - Enable filtering and grouping in client-facing dashboards
+      - Support benchmarking across industries and organization sizes
+      
+      Grain: One row per employer organization
+    columns:
+      - name: employer_key
+        description: "Surrogate key (hashed from employer_id) - use this for joins to fact tables"
+        data_tests:
+          - unique
+          - not_null
+      - name: employer_id
+        description: "Natural business key - original employer identifier from source system"
+        data_tests:
+          - unique
+          - not_null
+      - name: employer_name
+        description: "Company/organization name"
+      - name: industry
+        description: "Industry sector (Technology, Healthcare, etc.) - used for peer benchmarking"
+      - name: employee_count
+        description: "Total employees - represents maximum eligible screening population for enrollment rate calculations"
+      - name: state
+        description: "Primary operating state - enables geographic analysis of program reach"
+      - name: contract_start_date
+        description: "Contract start date - used to calculate program tenure and expected maturity"
+  
+  - name: dim_member
+    description: |
+      Member/Patient Dimension Table
+      
+      Contains demographic and descriptive attributes about individual members/patients enrolled in
+      cancer screening programs. This is a Type 1 slowly changing dimension with calculated attributes
+      like age and age_group that are recomputed on each refresh.
+      
+      Business Purpose:
+      - Enable population segmentation and demographic analysis
+      - Support personalized outreach based on risk factors
+      - Track member eligibility for different screening types
+      
+      Grain: One row per member/patient
+    columns:
+      - name: member_key
+        description: "Surrogate key (hashed from member_id) - use this for joins to fact tables"
+        data_tests:
+          - unique
+          - not_null
+      - name: member_id
+        description: "Natural business key - original member identifier from source system"
+        data_tests:
+          - unique
+          - not_null
+      - name: employer_id
+        description: "Foreign key to employer dimension - identifies member's sponsoring organization"
+      - name: age
+        description: "Current age in years - calculated from date_of_birth, recomputed on each refresh"
+      - name: age_group
+        description: "Age segment: 'Under 40', '40-49', '50-64', '65+' - used for screening eligibility rules and reporting"
+      - name: gender
+        description: "Gender (M/F/Other) - determines screening type eligibility (mammograms, prostate screening, etc.)"
+      - name: high_risk_flag
+        description: "Boolean flag for elevated cancer risk (family history, genetic markers) - prioritizes for outreach"
+      - name: state
+        description: "Member's state of residence - enables geographic analysis and network adequacy assessment"
+      - name: zip_code
+        description: "Member's ZIP code - supports granular geographic analysis and provider matching"
+  
+  - name: dim_provider
+    description: |
+      Healthcare Provider Dimension Table
+      
+      Contains attributes about healthcare providers (physicians, clinics, labs) who perform cancer
+      screenings and follow-up procedures for Color members. This is a Type 1 slowly changing dimension.
+      
+      Business Purpose:
+      - Enable provider network analysis and performance tracking
+      - Support provider directory and member matching
+      - Assess network adequacy by specialty and geography
+      
+      Grain: One row per healthcare provider
+    columns:
+      - name: provider_key
+        description: "Surrogate key (hashed from provider_id) - use this for joins to fact tables"
+        data_tests:
+          - unique
+          - not_null
+      - name: provider_id
+        description: "Natural business key - original provider identifier from source system"
+        data_tests:
+          - unique
+          - not_null
+      - name: provider_name
+        description: "Provider's name (e.g., Dr. Smith) - for display in member-facing tools"
+      - name: specialty
+        description: "Medical specialty (Radiology, Oncology, etc.) - determines which screening types provider can perform"
+      - name: state
+        description: "Provider's practice state - used to assess network coverage by geography"
+      - name: npi_number
+        description: "National Provider Identifier - unique credential for US healthcare providers"
+  
+  - name: fct_screenings
+    description: |
+      Screening Events Fact Table (Incremental)
+      
+      Core transactional fact table capturing individual cancer screening procedures with results,
+      follow-up requirements, and costs. This is the foundation for measuring program effectiveness,
+      clinical outcomes, and operational performance.
+      
+      Business Purpose:
+      - Track all screening events and outcomes
+      - Measure cancer detection rates and result distributions
+      - Calculate follow-up compliance and care gaps
+      - Support provider performance analysis
+      - Enable cost analysis and ROI calculations
+      
+      Grain: One row per screening procedure (transactional - one screening event)
+      
+      Materialization: Incremental (loads only new screenings since last run based on screening_date)
+      
+      Key Metrics Enabled:
+      - Cancer detection rate (cancers detected per 1,000 screenings)
+      - Abnormal result rate
+      - Follow-up completion rate
+      - Time to results (days from screening to result delivery)
+      - Cost per screening and cost per cancer detected
+    columns:
+      - name: screening_key
+        description: "Surrogate key for this screening event - primary key of fact table"
+        data_tests:
+          - unique
+          - not_null
+      - name: screening_id
+        description: "Natural business key - original screening identifier from source system"
+        data_tests:
+          - unique
+          - not_null
+      - name: member_key
+        description: "Foreign key to dim_member - links to patient who received screening"
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_member')
+              field: member_key
+      - name: employer_key
+        description: "Foreign key to dim_employer - links to sponsoring organization"
+      - name: provider_key
+        description: "Foreign key to dim_provider - links to provider who performed screening"
+      - name: screening_type
+        description: "Type of screening: Mammogram, Colonoscopy, Prostate Screening, Cervical Screening, etc."
+      - name: screening_date
+        description: "Date screening was performed - used for time-series analysis and trending"
+      - name: result_date
+        description: "Date results were delivered to member - used to calculate turnaround time"
+      - name: result
+        description: "Screening outcome: Normal, Abnormal - Benign, or Cancer Detected"
+      - name: cancer_detected_flag
+        description: "Binary flag (0/1) for cancer detected - used in SUM() for counts and rates"
+      - name: abnormal_flag
+        description: "Binary flag (0/1) for abnormal but benign result - requires follow-up"
+      - name: normal_flag
+        description: "Binary flag (0/1) for normal result - no follow-up needed"
+      - name: follow_up_needed
+        description: "Boolean indicating whether result requires follow-up care"
+      - name: follow_up_completed_flag
+        description: "Binary flag (0/1) for follow-up was completed - measures care continuity"
+      - name: follow_up_missing_flag
+        description: "Binary flag (0/1) for follow-up needed but not completed - identifies care gaps"
+      - name: cost
+        description: "Cost of screening procedure in dollars - used for program cost analysis"
+      - name: days_to_result
+        description: "Number of days from screening to result delivery - quality metric for operational efficiency"
+  
+  - name: fct_screening_journey
+    description: |
+      Member Screening Journey Fact Table (Incremental)
+      
+      Aggregated fact table capturing each member's complete screening journey from enrollment through
+      all screening events and outcomes. This is a periodic snapshot fact (one row per member) that
+      summarizes their cumulative program participation and results.
+      
+      Business Purpose:
+      - Track member-level program engagement and completion
+      - Calculate participation rates and time-to-first-screening
+      - Measure individual follow-up compliance
+      - Enable member segmentation and risk stratification
+      - Support personalized outreach and intervention strategies
+      
+      Grain: One row per member (aggregated snapshot of member's entire journey)
+      
+      Materialization: Incremental (updates when new enrollments or screenings occur)
+      
+      Key Metrics Enabled:
+      - Enrollment to first screening conversion rate
+      - Average days from enrollment to first screening
+      - Participation rate (members who completed at least one screening)
+      - Repeat screening rate (members with multiple screenings)
+      - Individual follow-up completion rate
+      - Member lifetime cost and screening volume
+    columns:
+      - name: journey_key
+        description: "Surrogate key for this member journey - primary key of fact table"
+        data_tests:
+          - unique
+          - not_null
+      - name: member_key
+        description: "Foreign key to dim_member - links to patient"
+        data_tests:
+          - not_null
+      - name: employer_key
+        description: "Foreign key to dim_employer - links to sponsoring organization"
+      - name: enrollment_id
+        description: "Natural key for enrollment record"
+      - name: enrollment_date
+        description: "Date member enrolled - starting point for journey metrics"
+      - name: enrollment_channel
+        description: "How member enrolled (Email, Portal, Phone, HR Event) - used to optimize outreach"
+      - name: enrollment_status
+        description: "Current status: Active, Completed, or Inactive"
+      - name: total_screenings
+        description: "Total number of screenings completed by this member - measure of engagement"
+      - name: cancer_detections
+        description: "Number of cancers detected for this member (typically 0 or 1)"
+      - name: abnormal_results
+        description: "Number of abnormal but benign results - indicates follow-up burden"
+      - name: normal_results
+        description: "Number of normal screening results"
+      - name: follow_ups_needed
+        description: "Total follow-ups required based on abnormal results"
+      - name: follow_ups_completed
+        description: "Number of required follow-ups actually completed"
+      - name: first_screening_date
+        description: "Date of member's first screening - used to calculate conversion time"
+      - name: most_recent_screening_date
+        description: "Date of member's most recent screening - used to identify inactive members"
+      - name: total_screening_cost
+        description: "Cumulative cost of all screenings for this member"
+      - name: avg_days_to_result
+        description: "Average turnaround time across all member's screenings"
+      - name: has_completed_screening
+        description: "Binary flag (0/1) indicating member completed at least one screening - key participation metric"
+      - name: days_to_first_screening
+        description: "Days from enrollment to first screening - critical engagement speed metric"
+      - name: follow_up_completion_rate
+        description: "Decimal 0-1 showing % of required follow-ups completed - care continuity metric"
+      - name: multiple_screenings_flag
+        description: "Binary flag (0/1) for members with 2+ screenings - indicates strong engagement"
+      - name: cancer_detected_flag
+        description: "Binary flag (0/1) for any cancer detected - used to identify high-risk members needing support"
