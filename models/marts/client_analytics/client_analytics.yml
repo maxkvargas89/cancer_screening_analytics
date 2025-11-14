@@ -21,16 +21,24 @@ models:
       - Executive leadership reviewing client success
       
       Grain: One row per employer organization
-      
+
       Refresh Frequency: Daily (full refresh)
     columns:
       - name: employer_id
         description: "Unique employer identifier"
-        tests:
+        data_tests:
+          - unique
           - not_null
+          - relationships:
+              to: ref('dim_employer')
+              field: employer_id
       - name: employer_name
         description: "Company/organization name"
+        data_tests:
+          - not_null
       - name: total_enrolled_members
+        data_tests:
+          - not_null
         description: "Total members enrolled in screening program"
       - name: enrollment_rate_pct
         description: "% of eligible employees (employee_count) who enrolled - measures program reach"
@@ -49,13 +57,22 @@ models:
           - 35 points: Participation rate
           - 35 points: Follow-up compliance rate
           - 10 points: Time-to-screening (≤10 days - 10, between 10 and 20 days - 5, >20 - 0)
-          
+
           Score interpretation:
           - 80-100: Excellent program performance
           - 60-79: Good performance, minor improvements needed
           - 40-59: Fair performance, significant gaps exist
           - <40: Poor performance, urgent intervention needed
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 AND <= 100"
+              config:
+                severity: error
       - name: cancers_detected_per_1000_screenings
+        data_tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
         description: "Industry standard metric for screening yield - benchmark ~4-8 per 1000"
   
   - name: mart_population_insights
@@ -78,17 +95,28 @@ models:
       - Marketing/outreach teams
       
       Grain: One row per employer - age_group - gender - state - high_risk_flag combination
-      
+
       Refresh Frequency: Daily (full refresh)
     columns:
       - name: employer_id
         description: "Unique employer identifier"
-        tests:
+        data_tests:
           - not_null
+          - relationships:
+              to: ref('dim_employer')
+              field: employer_id
       - name: age_group
         description: "Age segment: 'Under 40', '40-49', '50-64', '65+'"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['Under 40', '40-49', '50-64', '65+']
       - name: gender
         description: "Gender: M, F, Other"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['M', 'F', 'Other']
       - name: state
         description: "Member's state of residence"
       - name: high_risk_flag
@@ -103,7 +131,14 @@ models:
           - 'High Risk - Low Engagement': <50% screening rate - URGENT OUTREACH NEEDED
           - 'Medium Risk - Moderate Engagement': 50-75% screening rate - Needs encouragement
           - 'Low Risk - High Engagement': >75% screening rate - Maintain momentum
+        data_tests:
+          - accepted_values:
+              values: ['High Risk - Low Engagement', 'Medium Risk - Moderate Engagement', 'Low Risk - High Engagement']
       - name: has_care_gap
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
         description: "Binary flag indicating segment has members who haven't screened - identifies opportunity areas"
       - name: cancer_detection_rate_per_1000
         description: "Cancers detected per 1,000 screenings in this segment - may reveal high-risk populations"
@@ -128,17 +163,25 @@ models:
       - Executive teams presenting program value
       
       Grain: One row per employer organization
-      
+
       Refresh Frequency: Daily (full refresh)
     columns:
       - name: employer_id
         description: "Unique employer identifier"
-        tests:
+        data_tests:
+          - unique
           - not_null
+          - relationships:
+              to: ref('dim_employer')
+              field: employer_id
       - name: employer_name
         description: "Company/organization name"
+        data_tests:
+          - not_null
       - name: total_screenings
         description: "Total screening procedures performed"
+        data_tests:
+          - not_null
       - name: cancer_detections
         description: "Number of cancers detected - PRIMARY OUTCOME METRIC"
       - name: cancers_detected_per_1000_screenings
@@ -163,9 +206,15 @@ models:
           - 50 points: Follow-up completion rate
           - 25 points: Timely results (≤14 days)
           - 25 points: Detection rate (≥4 per 1,000)
-          
+
           Score interpretation:
           - 80-100: Excellent clinical quality
           - 60-79: Good quality, minor gaps
           - 40-59: Fair quality, improvements needed
           - <40: Poor quality, urgent review required
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 AND <= 100"
+              config:
+                severity: error
