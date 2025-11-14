@@ -1,37 +1,66 @@
-{{ config(
-  materialized='incremental',
-  unique_key='fact_id',
-  on_schema_change='append_new_columns',
-  partition_by={'field': 'recommendation_date', 'data_type': 'date'},
-  cluster_by=['member_id','screening_type']
-) }}
+{{
+    config(
+        materialized='incremental',
+        unique_key='screening_key'
+    )
+}}
 
-with src as (
-  select * from {{ ref('int_member_screening_keys') }}
-  {% if is_incremental() %}
-    where recommendation_date >
-      (select coalesce(max(recommendation_date), date('2000-01-01')) from {{ this }})
-  {% endif %}
+with screenings as (
+    select * from {{ ref('stg_screenings') }}
+    {% if is_incremental() %}
+        where screening_date > (select max(screening_date) from {{ this }})
+    {% endif %}
+),
+
+final as (
+    select
+        -- Primary key
+        {{ dbt_utils.generate_surrogate_key(['screening_id']) }} as screening_key,
+        
+        -- Natural key
+        screening_id,
+        
+        -- Foreign keys (surrogate keys generated from natural keys)
+        {{ dbt_utils.generate_surrogate_key(['member_id']) }} as member_key,
+        {{ dbt_utils.generate_surrogate_key(['employer_id']) }} as employer_key,
+        {{ dbt_utils.generate_surrogate_key(['provider_id']) }} as provider_key,
+        
+        -- Degenerate dimensions (natural keys for reference)
+        member_id,
+        employer_id,
+        provider_id,
+        
+        -- Date keys
+        screening_date,
+        result_date,
+        
+        -- Screening attributes
+        screening_type,
+        result,
+        follow_up_needed,
+        follow_up_completed,
+        
+        -- Metrics
+        cost,
+        days_to_result,
+        
+        -- Calculated flags
+        case when result = 'Cancer Detected' then 1 else 0 end as cancer_detected_flag,
+        case when result = 'Abnormal - Benign' then 1 else 0 end as abnormal_flag,
+        case when result = 'Normal' then 1 else 0 end as normal_flag,
+        case 
+            when follow_up_needed and follow_up_completed then 1 
+            else 0 
+        end as follow_up_completed_flag,
+        case 
+            when follow_up_needed and not follow_up_completed then 1 
+            else 0 
+        end as follow_up_missing_flag,
+        
+        -- Metadata
+        loaded_at
+        
+    from screenings
 )
 
-select
-  fact_id,
-  screening_id,
-  member_id,
-  employer_id,
-  screening_type,
-  recommendation_date,
-  completion_date,
-  result,
-  source,
-  dob,
-  sex_at_birth,
-  _is_completed,
-  current_timestamp() as _loaded_at
-from (
-  select
-    src.*,
-    -- convenience flag: completed vs. recommended-only
-    case when completion_date is not null then true else false end as _is_completed
-  from src
-)
+select * from final

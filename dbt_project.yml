@@ -22,12 +22,17 @@ models:
       +materialized: view
       +schema: staging
     intermediate:
-      +materialized: view
       +schema: intermediate
       
       core:
         +materialized: table
         +schema: intermediate
+        fct_screenings:
+          +materialized: incremental
+          +unique_key: screening_key
+        fct_screening_journey:
+            +materialized: incremental
+            +unique_key: journey_key
     marts:
       +materialized: table
       +schema: marts
