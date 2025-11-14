@@ -5,6 +5,7 @@
     )
 }}
 
+
 with screenings as (
     select * from {{ ref('stg_screenings') }}
     {% if is_incremental() %}
