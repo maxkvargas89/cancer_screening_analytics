@@ -8,8 +8,17 @@
 with screenings as (
     select * from {{ ref('stg_screenings') }}
     {% if is_incremental() %}
-        where screening_date > (select max(screening_date) from {{ this }})
-    {% endif %}
+    -- Hybrid incremental strategy to handle late-arriving data:
+    -- 1. Capture new records by loaded_at (primary mechanism)
+    -- 2. Recapture screenings from last 7 days to catch late arrivals
+    --    (e.g., a screening dated Jan 5 arriving after Jan 10 screening)
+    -- This ensures we don't miss records while avoiding full table scans
+    where loaded_at > (select max(loaded_at) from {{ this }})
+       or screening_date >= date_sub(
+            (select max(screening_date) from {{ this }}),
+            interval 7 day
+          )
+{% endif %}
 ),
 
 final as (

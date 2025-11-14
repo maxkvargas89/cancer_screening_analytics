@@ -126,7 +126,10 @@ models:
       
       Grain: One row per screening procedure (transactional - one screening event)
       
-      Materialization: Incremental (loads only new screenings since last run based on screening_date)
+      Materialization: Incremental with hybrid late-arrival handling strategy:
+      - Primary: New records detected by loaded_at timestamp
+      - Secondary: 7-day lookback window on screening_date to capture late arrivals
+      - This ensures data completeness while maintaining incremental efficiency
       
       Key Metrics Enabled:
       - Cancer detection rate (cancers detected per 1,000 screenings)
@@ -180,6 +183,8 @@ models:
         description: "Cost of screening procedure in dollars - used for program cost analysis"
       - name: days_to_result
         description: "Number of days from screening to result delivery - quality metric for operational efficiency"
+      - name: loaded_at
+        description: "Timestamp when record was loaded into the data warehouse - used for incremental loading and late-arrival detection"
   
   - name: agg_member_enrollment_summary
     description: |
