@@ -35,7 +35,6 @@ models:
         
       agg_member_enrollment_summary:
           +materialized: table
-          +unique_key: member_key
           # Remove partitioning for portfolio project
           #+partition_by:
           #  field: enrollment_date

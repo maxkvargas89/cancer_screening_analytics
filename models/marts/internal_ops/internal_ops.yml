@@ -1,0 +1,155 @@
+version: 2
+
+models:
+  - name: prep_followup_analysis
+    description: |
+      Follow-Up Completion Feature Preparation
+
+      Transforms screening events requiring follow-up into a feature-engineered dataset for
+      predictive modeling. This table prepares predictor variables (age, gender, screening type,
+      timing) and outcome variables (follow-up completed/not completed) for logistic regression
+      or other ML models to identify factors influencing follow-up completion.
+
+      Business Purpose:
+      - Identify drivers of follow-up non-compliance
+      - Build predictive models for follow-up completion
+      - Enable targeted interventions for at-risk members
+      - Support data science and clinical research
+
+      Grain: One row per screening event that required follow-up
+
+      Refresh Frequency: Daily (full refresh)
+
+      Key Use Cases:
+      - Logistic regression: outcome_binary ~ age + gender + screening_type + days_to_result
+      - Cohort analysis: Compare completion rates across demographic segments
+      - Time-series analysis: Track completion trends over time
+    columns:
+      - name: screening_key
+        description: "Surrogate key for screening event - primary key"
+        data_tests:
+          - unique
+          - not_null
+      - name: screening_id
+        description: "Natural business key for screening event"
+        data_tests:
+          - unique
+          - not_null
+      - name: member_key
+        description: "Foreign key to dim_member"
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_member')
+              field: member_key
+      - name: outcome
+        description: "Boolean outcome variable: TRUE if follow-up completed, FALSE otherwise"
+        data_tests:
+          - not_null
+      - name: outcome_binary
+        description: "Numeric encoding of outcome (1 = completed, 0 = not completed) for regression models"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+      - name: age_group
+        description: "Categorical predictor: Age segment of member"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['Under 40', '40-49', '50-64', '65+']
+      - name: gender
+        description: "Categorical predictor: Member gender"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['M', 'F', 'Other']
+      - name: screening_type
+        description: "Categorical predictor: Type of screening performed"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['Mammogram', 'Colonoscopy', 'Prostate Screening', 'Cervical Screening']
+      - name: days_to_result
+        description: "Continuous predictor: Days from screening to result delivery"
+      - name: day_of_week_result_delivered
+        description: "Categorical predictor: Day of week results were delivered (may affect member response)"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+      - name: screening_date
+        description: "Date screening was performed"
+        data_tests:
+          - not_null
+      - name: result_date
+        description: "Date results were delivered"
+        data_tests:
+          - not_null
+      - name: result
+        description: "Screening result: 'Abnormal - Benign' or 'Cancer Detected' (Normal excluded by filter)"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['Abnormal - Benign', 'Cancer Detected']
+
+  - name: analysis_followup_descriptive
+    description: |
+      Follow-Up Completion Descriptive Statistics
+
+      Provides summary statistics and completion rates for follow-up care, segmented by various
+      demographic and operational dimensions. This table answers: "Which groups have the lowest
+      follow-up completion rates?" to inform targeted outreach strategies.
+
+      Business Purpose:
+      - Identify demographic segments with low follow-up compliance
+      - Quantify completion rate gaps across age, gender, screening type
+      - Detect operational patterns (day of week effects, result turnaround time impact)
+      - Prioritize intervention resources toward lowest-performing segments
+
+      Grain: One row per segment (Overall, Age Group, Gender, Screening Type, Day of Week, Days to Result)
+
+      Refresh Frequency: Daily (full refresh)
+
+      Key Stakeholders:
+      - Clinical operations team planning outreach
+      - Quality improvement teams addressing care gaps
+      - Data science team validating model features
+    columns:
+      - name: segment_type
+        description: "Dimension being analyzed: 'Overall', 'Age Group', 'Gender', 'Screening Type', 'Day of Week', 'Days to Result'"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['Overall', 'Age Group', 'Gender', 'Screening Type', 'Day of Week', 'Days to Result']
+      - name: segment_value
+        description: "Specific value within the dimension (e.g., 'Under 40' for Age Group, 'Mammogram' for Screening Type)"
+        data_tests:
+          - not_null
+      - name: total_records
+        description: "Number of screenings requiring follow-up in this segment"
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
+      - name: completed
+        description: "Number of follow-ups completed in this segment"
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+          - dbt_utils.expression_is_true:
+              expression: "<= total_records"
+              config:
+                error_if: ">0"
+                warn_if: ">0"
+      - name: completion_rate_pct
+        description: "Percentage of follow-ups completed (completed / total_records * 100)"
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 AND <= 100"
+      - name: calculated_at
+        description: "Timestamp when statistics were calculated"
+        data_tests:
+          - not_null
