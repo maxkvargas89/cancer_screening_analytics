@@ -39,17 +39,28 @@ models:
       - name: total_enrolled_members
         data_tests:
           - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
         description: "Total members enrolled in screening program"
       - name: enrollment_rate_pct
         description: "% of eligible employees (employee_count) who enrolled - measures program reach"
+        data_tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 AND <= 100"
       - name: participation_rate_pct
         description: "% of enrolled members who completed at least one screening - KEY SUCCESS METRIC"
+        data_tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 AND <= 100"
       - name: avg_days_to_first_screening
         description: "Average days from enrollment to first completed screening - measures engagement speed"
       - name: median_days_to_first_screening
         description: "Median days to first screening - less sensitive to outliers than average"
       - name: follow_up_compliance_rate_pct
         description: "% of needed follow-ups that were completed - measures care continuity"
+        data_tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 AND <= 100"
       - name: program_health_score
         description: |
           Composite score 0-100 measuring overall program performance:
@@ -78,22 +89,22 @@ models:
   - name: mart_population_insights
     description: |
       Population Insights Dashboard - Demographic Segmentation
-      
+
       Client-facing mart providing population health analytics segmented by demographics.
       Designed to answer: "Where should we focus outreach efforts?"
-      
+
       Business Purpose:
       - Identify underserved population segments
       - Target outreach campaigns to specific demographics
       - Understand engagement patterns by age, gender, location, risk profile
       - Detect health equity gaps and disparities
       - Segment members for personalized interventions
-      
+
       Key Stakeholders:
       - Employer wellness program managers
       - Color clinical team planning interventions
       - Marketing/outreach teams
-      
+
       Grain: One row per employer - age_group - gender - state - high_risk_flag combination
 
       Refresh Frequency: Daily (full refresh)
@@ -123,8 +134,15 @@ models:
         description: "Boolean indicating elevated cancer risk (family history, genetic factors)"
       - name: total_members
         description: "Population size of this demographic segment"
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
       - name: screening_rate_pct
         description: "% of segment who completed screening - KEY EQUITY METRIC"
+        data_tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 AND <= 100"
       - name: engagement_risk_segment
         description: |
           Risk categorization for targeted interventions:
@@ -182,8 +200,14 @@ models:
         description: "Total screening procedures performed"
         data_tests:
           - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: cancer_detections
         description: "Number of cancers detected - PRIMARY OUTCOME METRIC"
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: cancers_detected_per_1000_screenings
         description: |
           Industry standard screening yield metric:
@@ -192,6 +216,9 @@ models:
           Used to validate program clinical effectiveness
       - name: follow_up_completion_rate_pct
         description: "% of abnormal results with completed follow-up - CRITICAL QUALITY METRIC"
+        data_tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= 0 AND <= 100"
       - name: total_care_gaps_identified
         description: "Number of abnormal findings (abnormal + cancer) requiring follow-up"
       - name: care_gaps_addressed
