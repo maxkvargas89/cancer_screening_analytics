@@ -77,8 +77,6 @@ cancer_screening_analytics/
 │   ├── raw_enrollments.csv
 │   ├── raw_screenings.csv
 │   ├── raw_providers.csv
-│   ├── raw_claims.csv
-│   └── raw_app_events.csv
 │
 ├── dbt_project.yml
 ├── packages.yml
