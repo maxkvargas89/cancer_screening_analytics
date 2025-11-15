@@ -53,8 +53,6 @@ cancer_screening_analytics/
 │   │   ├── stg_enrollments.sql
 │   │   ├── stg_screenings.sql
 │   │   ├── stg_providers.sql
-│   │   ├── stg_claims.sql
-│   │   ├── stg_app_events.sql
 │   │   └── sources.yml
 │   │
 │   ├── core/                           # Dimensions & facts
