@@ -151,3 +151,6 @@ sources:
                   values: ['Radiology', 'Oncology', 'Primary Care', 'Gastroenterology', 'Pathology']
           - name: npi_number
             description: "National Provider Identifier - unique 10-digit ID for healthcare providers in the US"
+
+      - name: raw_followup_predictions
+        description: "Logistic regression model predictions for follow-up completion likelihood"
