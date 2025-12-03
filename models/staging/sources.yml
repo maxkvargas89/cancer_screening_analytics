@@ -4,7 +4,7 @@ sources:
   - name: raw
     description: "Raw data loaded from CSV seeds representing Color's cancer screening program data"
     database: "{{ target.project }}"
-    schema: dbt_mvargas_raw
+    schema: "{{ 'dbt_mvargas_raw' if target.name == 'default' else target.schema + '_raw' }}"
     tables:
       - name: raw_members
         description: |
@@ -14,20 +14,20 @@ sources:
         columns:
           - name: member_id
             description: "Unique identifier for each member/patient in the screening program"
-            data_tests:
+            tests:
               - unique
               - not_null
           - name: employer_id
             description: "Foreign key to employers table - identifies which company/organization sponsors this member"
-            data_tests:
+            tests:
               - not_null
           - name: date_of_birth
             description: "Member's date of birth, used to calculate age and determine screening eligibility"
-            data_tests:
+            tests:
               - not_null
           - name: gender
             description: "Member's gender (M/F/Other), affects screening type eligibility (e.g., mammograms for women)"
-            data_tests:
+            tests:
               - accepted_values:
                   values: ['M', 'F', 'Other']
           - name: email
@@ -45,7 +45,7 @@ sources:
         columns:
           - name: employer_id
             description: "Unique identifier for each employer/client organization"
-            data_tests:
+            tests:
               - unique
               - not_null
           - name: employer_name
@@ -67,12 +67,12 @@ sources:
         columns:
           - name: enrollment_id
             description: "Unique identifier for each enrollment record"
-            data_tests:
+            tests:
               - unique
               - not_null
           - name: member_id
             description: "Foreign key to members - identifies which member is enrolling"
-            data_tests:
+            tests:
               - not_null
               - relationships:
                   to: source('raw', 'raw_members')
@@ -81,12 +81,12 @@ sources:
             description: "Date when member enrolled in the screening program"
           - name: enrollment_channel
             description: "How member enrolled: Email, Portal, Phone, or HR Event - used to optimize outreach strategies"
-            data_tests:
+            tests:
               - accepted_values:
                   values: ['Email', 'Portal', 'Phone', 'HR Event']
           - name: status
             description: "Current enrollment status: Active (ongoing), Completed (finished program), or Inactive (dropped out)"
-            data_tests:
+            tests:
               - accepted_values:
                   values: ['Active', 'Completed', 'Inactive']
           - name: consent_given
@@ -100,26 +100,26 @@ sources:
         columns:
           - name: screening_id
             description: "Unique identifier for each screening procedure"
-            data_tests:
+            tests:
               - unique
               - not_null
           - name: member_id
             description: "Foreign key to members - identifies which member received the screening"
-            data_tests:
+            tests:
               - not_null
               - relationships:
                   to: source('raw', 'raw_members')
                   field: member_id
           - name: screening_type
             description: "Type of cancer screening: Mammogram, Colonoscopy, Prostate Screening, Cervical Screening, etc."
-            data_tests:
+            tests:
               - accepted_values:
-                  values: ['Mammogram', 'Colonoscopy', 'Prostate Screening', 'Cervical Screening']
+                  values: ['Mammogram', 'Colonoscopy', 'Prostate Screening', 'Cervical Screening', 'General Health Screening']
           - name: screening_date
             description: "Date when screening procedure was performed"
           - name: result
             description: "Screening result: Normal (no issues), Abnormal - Benign (requires follow-up), or Cancer Detected"
-            data_tests:
+            tests:
               - accepted_values:
                   values: ['Normal', 'Abnormal - Benign', 'Cancer Detected']
           - name: result_date
@@ -139,14 +139,14 @@ sources:
         columns:
           - name: provider_id
             description: "Unique identifier for each healthcare provider"
-            data_tests:
+            tests:
               - unique
               - not_null
           - name: provider_name
             description: "Provider's name (e.g., Dr. Smith)"
           - name: specialty
             description: "Provider's medical specialty: Radiology, Oncology, Primary Care, Gastroenterology, Pathology"
-            data_tests:
+            tests:
               - accepted_values:
                   values: ['Radiology', 'Oncology', 'Primary Care', 'Gastroenterology', 'Pathology']
           - name: npi_number
