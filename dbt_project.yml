@@ -54,7 +54,7 @@ models:
 
 seeds:
   cancer_screening_analytics:
-    +schema: raw
+    +schema: "{{ 'raw' if target.name == 'default' else target.schema.replace('analytics_', '') + '_raw' }}"
     +quote_columns: false
 
 tests:

@@ -89,23 +89,23 @@ models:
     columns:
       - name: segment_type
         description: "Dimension being analyzed: 'Overall', 'Age Group', 'Gender', 'Screening Type', 'Day of Week', 'Days to Result'"
-        data_tests:
+        tests:
           - not_null
           - accepted_values:
               values: ['Overall', 'Age Group', 'Gender', 'Screening Type', 'Day of Week', 'Days to Result']
       - name: segment_value
         description: "Specific value within the dimension (e.g., 'Under 40' for Age Group, 'Mammogram' for Screening Type)"
-        data_tests:
+        tests:
           - not_null
       - name: total_records
         description: "Number of screenings requiring follow-up in this segment"
-        data_tests:
+        tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: "> 0"
       - name: completed
         description: "Number of follow-ups completed in this segment"
-        data_tests:
+        tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: ">= 0"
@@ -116,13 +116,14 @@ models:
                 warn_if: ">0"
       - name: completion_rate_pct
         description: "Percentage of follow-ups completed (completed / total_records * 100)"
-        data_tests:
+        tests:
           - not_null
-          - dbt_utils.expression_is_true:
-              expression: ">= 0 AND <= 100"
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
       - name: calculated_at
         description: "Timestamp when statistics were calculated"
-        data_tests:
+        tests:
           - not_null
   
   - name: mart_followup_risk_prediction

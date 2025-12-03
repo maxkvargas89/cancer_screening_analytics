@@ -26,7 +26,7 @@ models:
     columns:
       - name: employer_id
         description: "Unique employer identifier"
-        data_tests:
+        tests:
           - unique
           - not_null
           - relationships:
@@ -34,33 +34,36 @@ models:
               field: employer_id
       - name: employer_name
         description: "Company/organization name"
-        data_tests:
+        tests:
           - not_null
       - name: total_enrolled_members
-        data_tests:
+        tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: ">= 0"
         description: "Total members enrolled in screening program"
       - name: enrollment_rate_pct
         description: "% of eligible employees (employee_count) who enrolled - measures program reach"
-        data_tests:
-          - dbt_utils.expression_is_true:
-              expression: ">= 0 AND <= 100"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
       - name: participation_rate_pct
         description: "% of enrolled members who completed at least one screening - KEY SUCCESS METRIC"
-        data_tests:
-          - dbt_utils.expression_is_true:
-              expression: ">= 0 AND <= 100"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
       - name: avg_days_to_first_screening
         description: "Average days from enrollment to first completed screening - measures engagement speed"
       - name: median_days_to_first_screening
         description: "Median days to first screening - less sensitive to outliers than average"
       - name: follow_up_compliance_rate_pct
         description: "% of needed follow-ups that were completed - measures care continuity"
-        data_tests:
-          - dbt_utils.expression_is_true:
-              expression: ">= 0 AND <= 100"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
       - name: program_health_score
         description: |
           Composite score 0-100 measuring overall program performance:
@@ -74,14 +77,15 @@ models:
           - 60-79: Good performance, minor improvements needed
           - 40-59: Fair performance, significant gaps exist
           - <40: Poor performance, urgent intervention needed
-        data_tests:
+        tests:
           - not_null
-          - dbt_utils.expression_is_true:
-              expression: ">= 0 AND <= 100"
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
               config:
                 severity: error
       - name: cancers_detected_per_1000_screenings
-        data_tests:
+        tests:
           - dbt_utils.expression_is_true:
               expression: ">= 0"
         description: "Industry standard metric for screening yield - benchmark ~4-8 per 1000"
@@ -111,20 +115,20 @@ models:
     columns:
       - name: employer_id
         description: "Unique employer identifier"
-        data_tests:
+        tests:
           - not_null
           - relationships:
               to: ref('dim_employer')
               field: employer_id
       - name: age_group
         description: "Age segment: 'Under 40', '40-49', '50-64', '65+'"
-        data_tests:
+        tests:
           - not_null
           - accepted_values:
               values: ['Under 40', '40-49', '50-64', '65+']
       - name: gender
         description: "Gender: M, F, Other"
-        data_tests:
+        tests:
           - not_null
           - accepted_values:
               values: ['M', 'F', 'Other']
@@ -134,29 +138,31 @@ models:
         description: "Boolean indicating elevated cancer risk (family history, genetic factors)"
       - name: total_members
         description: "Population size of this demographic segment"
-        data_tests:
+        tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: "> 0"
       - name: screening_rate_pct
         description: "% of segment who completed screening - KEY EQUITY METRIC"
-        data_tests:
-          - dbt_utils.expression_is_true:
-              expression: ">= 0 AND <= 100"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
       - name: engagement_risk_segment
         description: |
           Risk categorization for targeted interventions:
           - 'High Risk - Low Engagement': <50% screening rate - URGENT OUTREACH NEEDED
           - 'Medium Risk - Moderate Engagement': 50-75% screening rate - Needs encouragement
           - 'Low Risk - High Engagement': >75% screening rate - Maintain momentum
-        data_tests:
+        tests:
           - accepted_values:
               values: ['High Risk - Low Engagement', 'Medium Risk - Moderate Engagement', 'Low Risk - High Engagement']
       - name: has_care_gap
-        data_tests:
+        tests:
           - not_null
           - accepted_values:
               values: [0, 1]
+              quote: false
         description: "Binary flag indicating segment has members who haven't screened - identifies opportunity areas"
       - name: cancer_detection_rate_per_1000
         description: "Cancers detected per 1,000 screenings in this segment - may reveal high-risk populations"
@@ -186,7 +192,7 @@ models:
     columns:
       - name: employer_id
         description: "Unique employer identifier"
-        data_tests:
+        tests:
           - unique
           - not_null
           - relationships:
@@ -194,17 +200,17 @@ models:
               field: employer_id
       - name: employer_name
         description: "Company/organization name"
-        data_tests:
+        tests:
           - not_null
       - name: total_screenings
         description: "Total screening procedures performed"
-        data_tests:
+        tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: ">= 0"
       - name: cancer_detections
         description: "Number of cancers detected - PRIMARY OUTCOME METRIC"
-        data_tests:
+        tests:
           - not_null
           - dbt_utils.expression_is_true:
               expression: ">= 0"
@@ -216,9 +222,10 @@ models:
           Used to validate program clinical effectiveness
       - name: follow_up_completion_rate_pct
         description: "% of abnormal results with completed follow-up - CRITICAL QUALITY METRIC"
-        data_tests:
-          - dbt_utils.expression_is_true:
-              expression: ">= 0 AND <= 100"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
       - name: total_care_gaps_identified
         description: "Number of abnormal findings (abnormal + cancer) requiring follow-up"
       - name: care_gaps_addressed
@@ -239,9 +246,10 @@ models:
           - 60-79: Good quality, minor gaps
           - 40-59: Fair quality, improvements needed
           - <40: Poor quality, urgent review required
-        data_tests:
+        tests:
           - not_null
-          - dbt_utils.expression_is_true:
-              expression: ">= 0 AND <= 100"
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
               config:
                 severity: error
