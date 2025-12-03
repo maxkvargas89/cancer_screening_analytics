@@ -7,6 +7,7 @@ A production-ready dbt project demonstrating end-to-end analytics engineering fo
 
 This project models and analyzes cancer screening program data, transforming raw healthcare data into client-facing analytics that drive business decisions. The architecture follows dimensional modeling best practices (Kimball methodology) and demonstrates skills in:
 
+- **Status:** Production-ready with multi-environment CI/CD pipeline
 - **Data modeling:** Staging → Core (dimensions & facts) → Marts architecture
 - **Healthcare analytics:** Cancer screening metrics, follow-up compliance, population health
 - **Statistical analysis:** Logistic regression for predicting patient follow-up completion
